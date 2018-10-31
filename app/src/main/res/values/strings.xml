@@ -1,3 +1,8 @@
 <resources>
-    <string name="app_name">AndroidQuiz</string>
+    <string name="app_name">Simple Quiz App</string>
+    <string name="hint_music">Music</string>
+    <string name="select_category_query">SELECT * FROM Category;</string>
+    <string name="id_attribute">ID</string>
+    <string name="name_attribute">Name</string>
+    <string name="image_attribute">Image</string>
 </resources>
