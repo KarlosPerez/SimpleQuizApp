@@ -1,6 +1,7 @@
 package projects.karlosp3rez.androidquiz.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
@@ -12,7 +13,9 @@ import android.widget.Toast;
 
 import java.util.List;
 
+import projects.karlosp3rez.androidquiz.Common.Common;
 import projects.karlosp3rez.androidquiz.Model.Category;
+import projects.karlosp3rez.androidquiz.QuestionActivity;
 import projects.karlosp3rez.androidquiz.R;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
@@ -55,7 +58,9 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
             card_category.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Toast.makeText(context, "Click en categoria" + categoryList.get(getAdapterPosition()).getName(), Toast.LENGTH_SHORT).show();
+                    Common.selectedCategory = categoryList.get(getAdapterPosition());
+                    Intent intent = new Intent(context, QuestionActivity.class);
+                    context.startActivity(intent);
                 }
             });
         }

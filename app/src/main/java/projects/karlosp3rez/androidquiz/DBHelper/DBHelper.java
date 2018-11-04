@@ -11,7 +11,7 @@ import java.util.List;
 
 import projects.karlosp3rez.androidquiz.Common.Common;
 import projects.karlosp3rez.androidquiz.Model.Category;
-import projects.karlosp3rez.androidquiz.R;
+import projects.karlosp3rez.androidquiz.Model.Question;
 
 public class DBHelper extends SQLiteAssetHelper {
 
@@ -48,5 +48,35 @@ public class DBHelper extends SQLiteAssetHelper {
         db.close();
 
         return categories;
+    }
+
+    /**
+     * GET ALL QUESTION FROM DB BY CATEGORY
+     */
+    public List<Question> getQuestionByCategory(int category) {
+        SQLiteDatabase db = instance.getWritableDatabase();
+
+        Cursor cursor = db.rawQuery(String.format("SELECT * FROM Question WHERE CategoryID = %d ORDER BY RANDOM() LIMIT 30;", category),null);
+        List<Question> questions = new ArrayList<>();
+        if (cursor.moveToFirst()) {
+            while (!cursor.isAfterLast()) {
+                Question question = new Question(cursor.getInt(cursor.getColumnIndex("ID")),
+                        cursor.getString(cursor.getColumnIndex("QuestionText")),
+                        cursor.getString(cursor.getColumnIndex("QuestionImage")),
+                        cursor.getString(cursor.getColumnIndex("AnswerA")),
+                        cursor.getString(cursor.getColumnIndex("AnswerB")),
+                        cursor.getString(cursor.getColumnIndex("AnswerC")),
+                        cursor.getString(cursor.getColumnIndex("AnswerD")),
+                        cursor.getString(cursor.getColumnIndex("CorrectAnswer")),
+                        cursor.getInt(cursor.getColumnIndex("IsImageQuestion")),
+                        cursor.getInt(cursor.getColumnIndex("CategoryID")));
+                questions.add(question);
+                cursor.moveToNext();
+            }
+        }
+        cursor.close();
+        db.close();
+
+        return questions;
     }
 }
