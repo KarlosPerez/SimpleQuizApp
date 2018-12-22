@@ -9,13 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.List;
 
 import projects.karlosp3rez.androidquiz.Common.Common;
 import projects.karlosp3rez.androidquiz.Model.Category;
-import projects.karlosp3rez.androidquiz.QuestionActivity;
+import projects.karlosp3rez.androidquiz.Activities.QuestionActivity;
 import projects.karlosp3rez.androidquiz.R;
 
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {

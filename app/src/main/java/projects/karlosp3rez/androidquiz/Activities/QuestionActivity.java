@@ -1,10 +1,10 @@
-package projects.karlosp3rez.androidquiz;
+package projects.karlosp3rez.androidquiz.Activities;
 
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.design.widget.TabLayout;
+import android.support.v4.view.ViewPager;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -22,14 +22,15 @@ import com.afollestad.materialdialogs.DialogAction;
 import com.afollestad.materialdialogs.MaterialDialog;
 import com.github.javiersantos.materialstyleddialogs.MaterialStyledDialog;
 
-import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import projects.karlosp3rez.androidquiz.Adapter.AnswerSheetAdapter;
+import projects.karlosp3rez.androidquiz.Adapter.QuestionFragmentAdapter;
 import projects.karlosp3rez.androidquiz.Common.Common;
 import projects.karlosp3rez.androidquiz.DBHelper.DBHelper;
 import projects.karlosp3rez.androidquiz.Model.CurrentQuestion;
-import projects.karlosp3rez.androidquiz.Model.Question;
+import projects.karlosp3rez.androidquiz.Fragments.QuestionFragment;
+import projects.karlosp3rez.androidquiz.R;
 
 public class QuestionActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -40,6 +41,9 @@ public class QuestionActivity extends AppCompatActivity
     AnswerSheetAdapter answerSheetAdapter;
     TextView txt_right_answer, txt_timer;
     RecyclerView answer_sheet_view_recycler;
+
+    ViewPager viewPager;
+    TabLayout tabLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,6 +84,28 @@ public class QuestionActivity extends AppCompatActivity
             }
             //Load Answer Sheet Panel
             loadAnswerSheet();
+
+            viewPager = (ViewPager) findViewById(R.id.viewPager);
+            tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
+
+            genFragmentList();
+
+            QuestionFragmentAdapter questionFragmentAdapter = new QuestionFragmentAdapter(getSupportFragmentManager(),
+                    this,Common.fragmentList);
+            viewPager.setAdapter(questionFragmentAdapter);
+
+            tabLayout.setupWithViewPager(viewPager);
+        }
+    }
+
+    private void genFragmentList() {
+        for (int i=0;i<Common.questionList.size();i++) {
+            Bundle bundle = new Bundle();
+            bundle.putInt("index", i);
+            QuestionFragment fragment = new QuestionFragment();
+            fragment.setArguments(bundle);
+
+            Common.fragmentList.add(fragment);
         }
     }
 

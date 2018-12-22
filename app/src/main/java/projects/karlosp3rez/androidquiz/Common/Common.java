@@ -8,6 +8,7 @@ import java.util.List;
 import projects.karlosp3rez.androidquiz.Model.Category;
 import projects.karlosp3rez.androidquiz.Model.CurrentQuestion;
 import projects.karlosp3rez.androidquiz.Model.Question;
+import projects.karlosp3rez.androidquiz.Fragments.QuestionFragment;
 
 public class Common {
 
@@ -22,6 +23,7 @@ public class Common {
 
     public static int right_answer_count = 0;
     public static int wrong_answer_count = 0;
+    public static ArrayList<QuestionFragment> fragmentList = new ArrayList<>();
 
     public enum ANSWER_TYPE {
         NO_ANSWER,
