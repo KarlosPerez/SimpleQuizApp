@@ -9,4 +9,5 @@
     <dimen name="margin_small">16dp</dimen>
     <dimen name="margin_medium">24dp</dimen>
     <dimen name="text_medium">24sp</dimen>
+    <dimen name="image_height">200dp</dimen>
 </resources>

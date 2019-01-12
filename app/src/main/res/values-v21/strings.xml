@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="menu_wrong_answer">Wrong Answer</string>
+    <string name="hint_finish_game">Finish Game</string>
+    <string name="fninish_game_prompt">Finish?</string>
+    <string name="negative_answer">No</string>
+    <string name="positive_answer">Yes</string>
+</resources>

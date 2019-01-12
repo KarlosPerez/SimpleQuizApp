@@ -3,6 +3,7 @@ package projects.karlosp3rez.androidquiz.Activities;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
+import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.TabLayout;
 import android.support.v4.view.ViewPager;
 import android.support.v7.widget.GridLayoutManager;
@@ -30,6 +31,7 @@ import projects.karlosp3rez.androidquiz.Common.Common;
 import projects.karlosp3rez.androidquiz.DBHelper.DBHelper;
 import projects.karlosp3rez.androidquiz.Model.CurrentQuestion;
 import projects.karlosp3rez.androidquiz.Fragments.QuestionFragment;
+import projects.karlosp3rez.androidquiz.Model.Question;
 import projects.karlosp3rez.androidquiz.R;
 
 public class QuestionActivity extends AppCompatActivity
@@ -39,7 +41,7 @@ public class QuestionActivity extends AppCompatActivity
     boolean isAnswerModeView = false;
 
     AnswerSheetAdapter answerSheetAdapter;
-    TextView txt_right_answer, txt_timer;
+    TextView txt_right_answer, txt_timer, txt_wrong_answer;
     RecyclerView answer_sheet_view_recycler;
 
     ViewPager viewPager;
@@ -74,6 +76,7 @@ public class QuestionActivity extends AppCompatActivity
             txt_right_answer.setVisibility(View.VISIBLE);
 
             txt_right_answer.setText(new StringBuilder(String.format("%d/%d",Common.right_answer_count,Common.questionList.size())));
+
             //Set count down timer
             setTimer();
 
@@ -95,6 +98,100 @@ public class QuestionActivity extends AppCompatActivity
             viewPager.setAdapter(questionFragmentAdapter);
 
             tabLayout.setupWithViewPager(viewPager);
+
+            //Event
+            viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+
+                int SCROLLING_RIGHT = 0;
+                int SCROLLING_LEFT = 1;
+                int SCROLLING_UNDETERMINED = 2;
+
+                int currentScrollDirection = 2;
+
+                private void setScrollingDirection(float positionOffset) {
+                    if((1-positionOffset) >= 0.5) {
+                        this.currentScrollDirection = SCROLLING_RIGHT;
+                    } else if((1-positionOffset) <= 0.5){
+                        this.currentScrollDirection = SCROLLING_LEFT;
+                    }
+                }
+
+                private boolean isScrollDirectionUndetermined() {
+                    return currentScrollDirection == SCROLLING_UNDETERMINED;
+                }
+
+                private boolean isScrollingRight() {
+                    return currentScrollDirection == SCROLLING_RIGHT;
+                }
+
+                private boolean isScrollingLeft() {
+                    return currentScrollDirection == SCROLLING_LEFT;
+                }
+
+                @Override
+                public void onPageScrolled(int i, float v, int i1) {
+                    if(isScrollDirectionUndetermined()) {
+                        setScrollingDirection(v);
+                    }
+                }
+
+                @Override
+                public void onPageSelected(int i) {
+                    QuestionFragment questionFragment;
+                    int position = 0;
+                    if(i>0) {
+                        if(isScrollingRight()) {
+                            //if user scroll to right, get preview fragment to calculate result
+                            questionFragment = Common.fragmentList.get(i-1);
+                            position = i-1;
+                        } else if(isScrollingLeft()) {
+                            //if user scroll to left, get next fragment to calculate result
+                            questionFragment = Common.fragmentList.get(i+1);
+                            position = i+1;
+                        } else {
+                            questionFragment = Common.fragmentList.get(position);
+                        }
+                    } else {
+                        questionFragment = Common.fragmentList.get(0);
+                        position = 0;
+                    }
+
+                    //if you want to show correct answer, just call function here
+                    CurrentQuestion question_state = questionFragment.getSelectedAnswer();
+                    Common.answerSheetList.set(position,question_state); //set question answer for answerSheet
+                    answerSheetAdapter.notifyDataSetChanged(); //change color in answer sheet
+
+                    countCorrectAnswer();
+                    txt_right_answer.setText(new StringBuilder(String.format("%d",Common.right_answer_count))
+                            .append("/")
+                            .append(String.format("%d", Common.questionList.size())).toString());
+                    txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
+
+                    if(question_state.getType() != Common.ANSWER_TYPE.NO_ANSWER) {
+                        questionFragment.showCorrectAnswer();
+                        questionFragment.disableAnswer();
+                    }
+                }
+
+                @Override
+                public void onPageScrollStateChanged(int i) {
+                    if(i == viewPager.SCROLL_STATE_IDLE) {
+                        this.currentScrollDirection = SCROLLING_UNDETERMINED;
+                    }
+                }
+            });
+        }
+    }
+
+    private void countCorrectAnswer() {
+        //Reset variable
+        Common.right_answer_count = Common.wrong_answer_count = 0;
+        for (CurrentQuestion item: Common.answerSheetList) {
+            if(item.getType() == Common.ANSWER_TYPE.RIGHT_ANSWER) {
+                Common.right_answer_count++;
+            } else if(item.getType() == Common.ANSWER_TYPE.WRONG_ANSWER) {
+                Common.wrong_answer_count++;
+            }
         }
     }
 
@@ -142,7 +239,9 @@ public class QuestionActivity extends AppCompatActivity
         time_play -= 1000;
     }
 
-
+    /**
+     *
+     */
     private void takeQuestion() {
         Common.questionList = DBHelper.getInstance(this).getQuestionByCategory(Common.selectedCategory.getId());
         if(Common.questionList.size() == 0) {
@@ -176,6 +275,31 @@ public class QuestionActivity extends AppCompatActivity
         answer_sheet_view_recycler.setAdapter(answerSheetAdapter);
     }
 
+    /**
+     * FINISH GAME
+     */
+    private void finishGame() {
+        int position = viewPager.getCurrentItem();
+        QuestionFragment questionFragment = Common.fragmentList.get(position);
+        CurrentQuestion question_state = questionFragment.getSelectedAnswer();
+        Common.answerSheetList.set(position,question_state); //set question answer for answerSheet
+        answerSheetAdapter.notifyDataSetChanged(); //change color in answer sheet
+
+        countCorrectAnswer();
+
+        txt_right_answer.setText(new StringBuilder(String.format("%d",Common.right_answer_count))
+                .append("/")
+                .append(String.format("%d", Common.questionList.size())).toString());
+        txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
+
+        if(question_state.getType() != Common.ANSWER_TYPE.NO_ANSWER) {
+            questionFragment.showCorrectAnswer();
+            questionFragment.disableAnswer();
+        }
+
+        //We will navigate to new Result Activity here
+    }
+
 
     @Override
     public void onBackPressed() {
@@ -185,6 +309,16 @@ public class QuestionActivity extends AppCompatActivity
         } else {
             super.onBackPressed();
         }
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.menu_wrong_answer);
+        ConstraintLayout constraintLayout = (ConstraintLayout) item.getActionView();
+        txt_wrong_answer = (TextView) constraintLayout.findViewById(R.id.txt_wrong_answer);
+        txt_wrong_answer.setText(String.valueOf(0));
+
+        return true;
     }
 
     @Override
@@ -202,7 +336,28 @@ public class QuestionActivity extends AppCompatActivity
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.menu_finish_game) {
+            if(!isAnswerModeView) {
+                new MaterialStyledDialog.Builder(this)
+                        .setTitle(getString(R.string.fninish_game_prompt))
+                        .setIcon(R.drawable.ic_mood_black_24dp)
+                        .setDescription(getString(R.string.finish_game_confirm))
+                        .setNegativeText(getString(R.string.negative_answer))
+                        .onNegative(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                dialog.dismiss();
+                            }
+                        })
+                        .setPositiveText(getString(R.string.positive_answer))
+                        .onPositive(new MaterialDialog.SingleButtonCallback() {
+                            @Override
+                            public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                                dialog.dismiss();
+                                finishGame();
+                            }
+                        }).show();
+            }
             return true;
         }
 

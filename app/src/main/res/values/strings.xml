@@ -18,4 +18,13 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="dummy_question">What do you choose?</string>
+    <string name="dummy_answerA">Answer A</string>
+    <string name="dummy_answerOption">Answer Option</string>
+    <string name="menu_wrong_answer">Wrong Answer</string>
+    <string name="hint_finish_game">Finish Game</string>
+    <string name="fninish_game_prompt">Finish?</string>
+    <string name="finish_game_confirm">Do you really want to confirm?</string>
+    <string name="negative_answer">No</string>
+    <string name="positive_answer">Yes</string>
 </resources>

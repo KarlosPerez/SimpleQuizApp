@@ -4,6 +4,7 @@ import android.os.CountDownTimer;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.TreeSet;
 
 import projects.karlosp3rez.androidquiz.Model.Category;
 import projects.karlosp3rez.androidquiz.Model.CurrentQuestion;
@@ -24,6 +25,7 @@ public class Common {
     public static int right_answer_count = 0;
     public static int wrong_answer_count = 0;
     public static ArrayList<QuestionFragment> fragmentList = new ArrayList<>();
+    public static TreeSet<String> selected_values = new TreeSet<>();
 
     public enum ANSWER_TYPE {
         NO_ANSWER,

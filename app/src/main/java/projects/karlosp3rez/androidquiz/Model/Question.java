@@ -2,23 +2,24 @@ package projects.karlosp3rez.androidquiz.Model;
 
 public class Question {
     private int id;
-    private String questionText, questionImage, answerA, answerB, asnwerC, answerD, correctAnswer;
-    private int categoryId, isImageQuestion;
+    private String questionText, questionImage, answerA, answerB, answerC, answerD, correctAnswer;
+    private int categoryId;
+    private boolean isImageQuestion;
 
     public Question() {
     }
 
-    public Question(int id, String questionText, String questionImage, String answerA, String answerB, String asnwerC, String answerD, String correctAnswer, int isImageQuestion, int categoryId) {
+    public Question(int id, String questionText, String questionImage, String answerA, String answerB, String answerC, String answerD, String correctAnswer, int categoryId, boolean isImageQuestion) {
         this.id = id;
         this.questionText = questionText;
         this.questionImage = questionImage;
         this.answerA = answerA;
         this.answerB = answerB;
-        this.asnwerC = asnwerC;
+        this.answerC = answerC;
         this.answerD = answerD;
         this.correctAnswer = correctAnswer;
-        this.isImageQuestion = isImageQuestion;
         this.categoryId = categoryId;
+        this.isImageQuestion = isImageQuestion;
     }
 
     public int getId() {
@@ -61,12 +62,12 @@ public class Question {
         this.answerB = answerB;
     }
 
-    public String getAsnwerC() {
-        return asnwerC;
+    public String getAnswerC() {
+        return answerC;
     }
 
-    public void setAsnwerC(String asnwerC) {
-        this.asnwerC = asnwerC;
+    public void setAnswerC(String answerC) {
+        this.answerC = answerC;
     }
 
     public String getAnswerD() {
@@ -85,19 +86,19 @@ public class Question {
         this.correctAnswer = correctAnswer;
     }
 
-    public int getIsImageQuestion() {
-        return isImageQuestion;
-    }
-
-    public void setIsImageQuestion(int isImageQuestion) {
-        this.isImageQuestion = isImageQuestion;
-    }
-
     public int getCategoryId() {
         return categoryId;
     }
 
     public void setCategoryId(int categoryId) {
         this.categoryId = categoryId;
+    }
+
+    public boolean isImageQuestion() {
+        return isImageQuestion;
+    }
+
+    public void setImageQuestion(boolean imageQuestion) {
+        isImageQuestion = imageQuestion;
     }
 }
