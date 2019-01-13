@@ -2,6 +2,7 @@ package projects.karlosp3rez.androidquiz.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.widget.RecyclerView;
@@ -40,11 +41,12 @@ public class AnswerSheetHelperAdapter extends RecyclerView.Adapter<AnswerSheetHe
     public void onBindViewHolder(@NonNull HelperViewHolder helperViewHolder, int i) {
         helperViewHolder.txt_question_num.setText(String.valueOf(i+1)); // Show question number
         if(currentQuestionList.get(i).getType() == Common.ANSWER_TYPE.RIGHT_ANSWER)
-            helperViewHolder.layout_wrapper.setBackgroundResource(R.drawable.grid_question_right_answer);
+            helperViewHolder.layout_wrapper.setBackgroundColor(Color.parseColor("#ff99cc00"));
         else if(currentQuestionList.get(i).getType() == Common.ANSWER_TYPE.WRONG_ANSWER)
-            helperViewHolder.layout_wrapper.setBackgroundResource(R.drawable.grid_question_wrong_answer);
+            helperViewHolder.layout_wrapper.setBackgroundColor(Color.parseColor("#FFCC0000"));
         else
             helperViewHolder.layout_wrapper.setBackgroundResource(R.drawable.grid_question_no_answer);
+
         helperViewHolder.setiRecyclerHelperClick(new IRecyclerHelperClick() {
             @Override
             public void onClick(View view, int position) {

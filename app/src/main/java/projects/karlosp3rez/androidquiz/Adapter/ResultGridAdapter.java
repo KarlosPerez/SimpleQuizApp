@@ -41,7 +41,7 @@ public class ResultGridAdapter extends RecyclerView.Adapter<ResultGridAdapter.Re
         Drawable img;
 
         //Change color based on result
-        resultGridViewHolder.btn_question.setText(new StringBuilder("Question").append(
+        resultGridViewHolder.btn_question.setText(new StringBuilder("Question ").append(
                 currentQuestionList.get(i).getQuestionIndex()+1));
         if(currentQuestionList.get(i).getType() == Common.ANSWER_TYPE.RIGHT_ANSWER) {
             resultGridViewHolder.btn_question.setBackgroundColor(Color.parseColor("#ff99cc00"));
@@ -73,9 +73,9 @@ public class ResultGridAdapter extends RecyclerView.Adapter<ResultGridAdapter.Re
             btn_question.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    //When user click to question button, we willget backto questionActivity to show question
+                    //When user click to question button, we will get back to questionActivity to show question
                     LocalBroadcastManager.getInstance(context)
-                            .sendBroadcast(new Intent(Common.KEY_BACK_FROM_RESULT).putExtra(Common.KEY_GO_TO_QUESTION
+                            .sendBroadcast(new Intent(Common.KEY_BACK_FROM_RESULT).putExtra(Common.KEY_BACK_FROM_RESULT
                                     ,currentQuestionList.get(getAdapterPosition()).getQuestionIndex()));
                 }
             });

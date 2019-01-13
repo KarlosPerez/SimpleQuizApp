@@ -61,29 +61,22 @@ public class QuestionFragment extends Fragment implements IQuestion {
             layout_image = (FrameLayout) itemView.findViewById(R.id.layout_image);
             progressBar = (ProgressBar) itemView.findViewById(R.id.progress_bar);
 
-            if(question.isImageQuestion()) {
-                ImageView image_question = (ImageView) itemView.findViewById(R.id.image_question);
-                Picasso.get().load(question.getQuestionImage()).into(image_question, new Callback() {
-                    @Override
-                    public void onSuccess() {
-                        progressBar.setVisibility(View.GONE);
-                    }
-
-                    @Override
-                    public void onError(Exception e) {
-                        Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_SHORT).show();
-                    }
-                });
-            } else {
-                layout_image.setVisibility(View.GONE);
-            }
+            loadImageQuestion(itemView);
 
             //View
             txt_question_text = (TextView) itemView.findViewById(R.id.txt_question_text);
             txt_question_text.setText(question.getQuestionText());
 
             ckbA = (CheckBox) itemView.findViewById(R.id.ckbAnswerA);
+            ckbB = (CheckBox) itemView.findViewById(R.id.ckbAnswerB);
+            ckbC = (CheckBox) itemView.findViewById(R.id.ckbAnswerC);
+            ckbD = (CheckBox) itemView.findViewById(R.id.ckbAnswerD);
+
             ckbA.setText(question.getAnswerA());
+            ckbB.setText(question.getAnswerB());
+            ckbC.setText(question.getAnswerC());
+            ckbD.setText(question.getAnswerD());
+
             ckbA.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -93,8 +86,6 @@ public class QuestionFragment extends Fragment implements IQuestion {
                         Common.selected_values.remove(ckbA.getText().toString());
                 }
             });
-            ckbB = (CheckBox) itemView.findViewById(R.id.ckbAnswerB);
-            ckbB.setText(question.getAnswerB());
             ckbB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -104,8 +95,6 @@ public class QuestionFragment extends Fragment implements IQuestion {
                         Common.selected_values.remove(ckbB.getText().toString());
                 }
             });
-            ckbC = (CheckBox) itemView.findViewById(R.id.ckbAnswerC);
-            ckbC.setText(question.getAnswerC());
             ckbC.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -115,8 +104,6 @@ public class QuestionFragment extends Fragment implements IQuestion {
                         Common.selected_values.remove(ckbC.getText().toString());
                 }
             });
-            ckbD = (CheckBox) itemView.findViewById(R.id.ckbAnswerD);
-            ckbD.setText(question.getAnswerD());
             ckbD.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
                 public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
@@ -131,6 +118,25 @@ public class QuestionFragment extends Fragment implements IQuestion {
         return itemView;
     }
 
+    private void loadImageQuestion(View itemView) {
+        if(question.isImageQuestion()) {
+            ImageView image_question = (ImageView) itemView.findViewById(R.id.image_question);
+            Picasso.get().load(question.getQuestionImage()).into(image_question, new Callback() {
+                @Override
+                public void onSuccess() {
+                    progressBar.setVisibility(View.GONE);
+                }
+
+                @Override
+                public void onError(Exception e) {
+                    Toast.makeText(getContext(), ""+e.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
+        } else {
+            layout_image.setVisibility(View.GONE);
+        }
+    }
+
     @Override
     public CurrentQuestion getSelectedAnswer() {
         //This function will return state of answer
@@ -138,41 +144,48 @@ public class QuestionFragment extends Fragment implements IQuestion {
         CurrentQuestion currentQuestion = new CurrentQuestion(questionindex,Common.ANSWER_TYPE.NO_ANSWER); //Default no answer
         StringBuilder result = new StringBuilder();
         if(Common.selected_values.size() > 1) {
-            //if multichoice
-            //Split answer to array
-            //Ex: arr[0] = A. New York
-            //Ex: arr[1] = B. Paris
-            Object[] arrayAnswer = Common.selected_values.toArray();
-            for(int i = 0;i<arrayAnswer.length;i++) {
-                if(i<arrayAnswer.length-1) {
-                    //Take first letter of answer. Ex: arr[0] = A. New York, we will take letter 'A'
-                    result.append(new StringBuilder((String)arrayAnswer[i]).substring(0,1)).append(",");
-                } else {
-                    result.append(new StringBuilder((String)arrayAnswer[i]).substring(0,1)); //Too
-                }
-            }
+            splitAnswerToArray(result);
         } else if(Common.selected_values.size() == 1) {
             //If only one choice
             Object[] arrayAnswer = Common.selected_values.toArray();
             result.append((String)arrayAnswer[0]).substring(0,1);
         }
-
         if(question != null) {
-            //Compare correctAnswer with user answer
-            if(!TextUtils.isEmpty(result)) {
-                if (result.toString().equals(question.getCorrectAnswer()))
-                    currentQuestion.setType(Common.ANSWER_TYPE.RIGHT_ANSWER);
-                else
-                    currentQuestion.setType(Common.ANSWER_TYPE.WRONG_ANSWER);
-            } else {
-                currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER);
-            }
+            compareAnswers(currentQuestion, result);
         } else {
             Toast.makeText(getContext(), "Cannot get question", Toast.LENGTH_SHORT).show();
             currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER);
         }
         Common.selected_values.clear(); //Always clear selected_value when compare done
         return currentQuestion;
+    }
+
+    private void compareAnswers(CurrentQuestion currentQuestion, StringBuilder result) {
+        //Compare correctAnswer with user answer
+        if(!TextUtils.isEmpty(result)) {
+            if (result.toString().equals(question.getCorrectAnswer()))
+                currentQuestion.setType(Common.ANSWER_TYPE.RIGHT_ANSWER);
+            else
+                currentQuestion.setType(Common.ANSWER_TYPE.WRONG_ANSWER);
+        } else {
+            currentQuestion.setType(Common.ANSWER_TYPE.NO_ANSWER);
+        }
+    }
+
+    private void splitAnswerToArray(StringBuilder result) {
+        //if multichoice
+        //Split answer to array
+        //Ex: arr[0] = A. New York
+        //Ex: arr[1] = B. Paris
+        Object[] arrayAnswer = Common.selected_values.toArray();
+        for(int i = 0;i<arrayAnswer.length;i++) {
+            if(i<arrayAnswer.length-1) {
+                //Take first letter of answer. Ex: arr[0] = A. New York, we will take letter 'A'
+                result.append(new StringBuilder((String)arrayAnswer[i]).substring(0,1)).append(",");
+            } else {
+                result.append(new StringBuilder((String)arrayAnswer[i]).substring(0,1)); //Too
+            }
+        }
     }
 
     @Override

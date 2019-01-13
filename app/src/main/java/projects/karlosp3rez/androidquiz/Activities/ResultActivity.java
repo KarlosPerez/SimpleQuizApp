@@ -41,7 +41,7 @@ public class ResultActivity extends AppCompatActivity {
     BroadcastReceiver backToQuestion = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().toString().equals(Common.KEY_BACK_FROM_RESULT)) {
+            if(intent.getAction().equals(Common.KEY_BACK_FROM_RESULT)) {
                 int question = intent.getIntExtra(Common.KEY_BACK_FROM_RESULT, -1);
                 goBackActivityWithQuestion(question);
             }
@@ -71,8 +71,9 @@ public class ResultActivity extends AppCompatActivity {
         recycler_result.setAdapter(adapter);
 
         txt_timer.setText(String.format("%02d:%02d",
-                TimeUnit.MILLISECONDS.toMinutes(Common.timer),
-                TimeUnit.MILLISECONDS.toSeconds(TimeUnit.MILLISECONDS.toMinutes(Common.timer))));
+            TimeUnit.MILLISECONDS.toMinutes(Common.timer),
+            TimeUnit.MILLISECONDS.toSeconds(Common.timer) -
+                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(Common.timer))));
         txt_right_answer.setText(new StringBuilder("").append(Common.right_answer_count).append("/")
         .append(Common.questionList.size()));
 
@@ -213,7 +214,7 @@ public class ResultActivity extends AppCompatActivity {
 
         txt_result = (TextView) findViewById(R.id.txt_result);
         txt_right_answer = (TextView) findViewById(R.id.txt_right_answer);
-        txt_timer = (TextView) findViewById(R.id.txt_timer);
+        txt_timer = (TextView) findViewById(R.id.txt_time);
 
         btn_filter_total = (Button) findViewById(R.id.btn_filter_total);
         btn_filter_no_answer = (Button) findViewById(R.id.btn_filter_no_answer);

@@ -57,15 +57,18 @@ public class QuestionActivity extends AppCompatActivity
     AnswerSheetHelperAdapter answerSheetHelperAdapter;
     TextView txt_right_answer, txt_timer, txt_wrong_answer;
     RecyclerView answer_sheet_view_recycler, answer_sheet_helper;
+    Button btn_done;
+    NavigationView navigationView;
 
     ViewPager viewPager;
     TabLayout tabLayout;
     DrawerLayout drawerLayout;
+    Toolbar toolbar;
 
     BroadcastReceiver goToQuestionNum = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
-            if(intent.getAction().toString().equals(Common.KEY_GO_TO_QUESTION)) {
+            if(intent.getAction().equals(Common.KEY_GO_TO_QUESTION)) {
                 int question = intent.getIntExtra(Common.KEY_GO_TO_QUESTION, -1);
                 if(question != -1)
                     viewPager.setCurrentItem(question);
@@ -78,30 +81,13 @@ public class QuestionActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_question);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-        toolbar.setTitle(Common.selectedCategory.getName());
-        setSupportActionBar(toolbar);
+
+        initUI();
 
         //register BroadCast
         LocalBroadcastManager.getInstance(this)
                 .registerReceiver(goToQuestionNum, new IntentFilter(Common.KEY_GO_TO_QUESTION));
 
-        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawerLayout.addDrawerListener(toggle);
-        toggle.syncState();
-
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        View hView = navigationView.getHeaderView(0);
-        answer_sheet_helper = (RecyclerView) hView.findViewById(R.id.answer_sheet_recycler_helper);
-        answer_sheet_helper.setHasFixedSize(true);
-        answer_sheet_helper.setLayoutManager(new GridLayoutManager(this, 3));
-        answer_sheet_helper.addItemDecoration(new SpaceDecoration(2));
-
-        Button btn_done = (Button) hView.findViewById(R.id.btn_done);
         btn_done.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -114,37 +100,26 @@ public class QuestionActivity extends AppCompatActivity
 
         if(Common.questionList.size() > 0) {
             //Show TextView right answer and text view timer
-            txt_right_answer = (TextView) findViewById(R.id.txt_question_right);
-            txt_timer = (TextView) findViewById(R.id.txt_timer);
-
             txt_timer.setVisibility(View.VISIBLE);
             txt_right_answer.setVisibility(View.VISIBLE);
-
-            txt_right_answer.setText(new StringBuilder(String.format("%d/%d",Common.right_answer_count,Common.questionList.size())));
-
-            //Set count down timer
-            setTimer();
+            txt_right_answer.setText(new StringBuilder(
+                    String.format("%d/%d",Common.right_answer_count,Common.questionList.size())));
 
             answer_sheet_view_recycler = (RecyclerView) findViewById(R.id.grid_answer_recycler);
             answer_sheet_view_recycler.setHasFixedSize(true);
             if (Common.questionList.size() > 5) { //if question List have size > 5, we will separate 2 rows
                 answer_sheet_view_recycler.setLayoutManager(new GridLayoutManager(this, Common.questionList.size() / 2));
             }
-            //Load Answer Sheet Panel
-            loadAnswerSheet();
 
-            viewPager = (ViewPager) findViewById(R.id.viewPager);
-            tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
-
+            setCounDownTimer();
+            loadAnswerSheetPanel();
             genFragmentList();
 
             QuestionFragmentAdapter questionFragmentAdapter = new QuestionFragmentAdapter(getSupportFragmentManager(),
                     this,Common.fragmentList);
+
             viewPager.setAdapter(questionFragmentAdapter);
-
             tabLayout.setupWithViewPager(viewPager);
-
-            //Event
             viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
 
                 int SCROLLING_RIGHT = 0;
@@ -202,22 +177,7 @@ public class QuestionActivity extends AppCompatActivity
                     }
 
                     //if you want to show correct answer, just call function here
-                    if(Common.answerSheetList.get(position).getType() == Common.ANSWER_TYPE.NO_ANSWER) {
-                        CurrentQuestion question_state = questionFragment.getSelectedAnswer();
-                        Common.answerSheetList.set(position, question_state); //set question answer for answerSheet
-                        answerSheetAdapter.notifyDataSetChanged(); //change color in answer sheet
-
-                        countCorrectAnswer();
-                        txt_right_answer.setText(new StringBuilder(String.format("%d", Common.right_answer_count))
-                                .append("/")
-                                .append(String.format("%d", Common.questionList.size())).toString());
-                        txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
-
-                        if (question_state.getType() != Common.ANSWER_TYPE.NO_ANSWER) {
-                            questionFragment.showCorrectAnswer();
-                            questionFragment.disableAnswer();
-                        }
-                    }
+                    showCorrectAnswer(position, questionFragment);
                 }
 
                 @Override
@@ -227,6 +187,59 @@ public class QuestionActivity extends AppCompatActivity
                     }
                 }
             });
+            viewPager.setOffscreenPageLimit(Common.questionList.size()); //fixed ViewPager size
+        }
+    }
+
+
+    private void initUI() {
+        //Toolbar
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setTitle(Common.selectedCategory.getName());
+        setSupportActionBar(toolbar);
+
+        //Navigation Drawer
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
+                this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        drawerLayout.addDrawerListener(toggle);
+        toggle.syncState();
+
+        navigationView = (NavigationView) findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(this);
+
+        View hView = navigationView.getHeaderView(0);
+        answer_sheet_helper = (RecyclerView) hView.findViewById(R.id.answer_sheet_recycler_helper);
+        answer_sheet_helper.setHasFixedSize(true);
+        answer_sheet_helper.setLayoutManager(new GridLayoutManager(this, 3));
+        answer_sheet_helper.addItemDecoration(new SpaceDecoration(2));
+
+        btn_done = (Button) hView.findViewById(R.id.btn_done);
+
+        txt_right_answer = (TextView) findViewById(R.id.txt_question_right);
+        txt_timer = (TextView) findViewById(R.id.txt_timer);
+
+        viewPager = (ViewPager) findViewById(R.id.viewPager);
+        tabLayout = (TabLayout) findViewById(R.id.sliding_tabs);
+
+    }
+
+    private void showCorrectAnswer(int position, QuestionFragment questionFragment) {
+        if(Common.answerSheetList.get(position).getType() == Common.ANSWER_TYPE.NO_ANSWER) {
+            CurrentQuestion question_state = questionFragment.getSelectedAnswer();
+            Common.answerSheetList.set(position, question_state); //set question answer for answerSheet
+            answerSheetAdapter.notifyDataSetChanged(); //change color in answer sheet
+
+            countCorrectAnswer();
+            txt_right_answer.setText(new StringBuilder(String.format("%d", Common.right_answer_count))
+                    .append("/")
+                    .append(String.format("%d", Common.questionList.size())).toString());
+            txt_wrong_answer.setText(String.valueOf(Common.wrong_answer_count));
+
+            if (question_state.getType() != Common.ANSWER_TYPE.NO_ANSWER) {
+                questionFragment.showCorrectAnswer();
+                questionFragment.disableAnswer();
+            }
         }
     }
 
@@ -256,7 +269,7 @@ public class QuestionActivity extends AppCompatActivity
     /**
      * SETUP TIMER
      */
-    private void setTimer() {
+    private void setCounDownTimer() {
         if(Common.countDownTimer == null) {
             startTimer();
         } else {
@@ -271,6 +284,7 @@ public class QuestionActivity extends AppCompatActivity
             public void onTick(long duration) {
                 countTimer(duration);
             }
+
             @Override
             public void onFinish() {
                 finishGame();
@@ -292,38 +306,38 @@ public class QuestionActivity extends AppCompatActivity
     private void takeQuestion() {
         Common.questionList = DBHelper.getInstance(this).getQuestionByCategory(Common.selectedCategory.getId());
         if(Common.questionList.size() == 0) {
-            //If no question
-            new MaterialStyledDialog.Builder(this)
-                    .setTitle("Opssss!!")
-                    .setIcon(R.drawable.ic_sentiment_dissatisfied_black_24dp)
-                    .setDescription("We don't have any question in this "+Common.selectedCategory.getName()+" category")
-                    .onPositive(new MaterialDialog.SingleButtonCallback() {
-                        @Override
-                        public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
-                            dialog.dismiss();
-                            finish();
-                        }
-            }).show();
+            noQuestionForSelectedCategoryDialog();
         } else {
             if(Common.answerSheetList.size() > 0)
                 Common.answerSheetList.clear();
 
-            /* Gen answerSheet item from question
-            30 question = 30 answer sheet item
-            1 question = 1 answer sheet item */
-            for(int i=0;i <Common.questionList.size();i++) {
+            /* Gen answerSheet item from question: 1 question => 1 answer sheet item */
+            for(int i=0;i <Common.questionList.size();i++)
                 Common.answerSheetList.add(new CurrentQuestion(i,Common.ANSWER_TYPE.NO_ANSWER)); //default all answer is no answer
-            }
         }
     }
 
-    private void loadAnswerSheet() {
+    private void noQuestionForSelectedCategoryDialog() {
+        new MaterialStyledDialog.Builder(this)
+                .setTitle("Opssss!!")
+                .setIcon(R.drawable.ic_sentiment_dissatisfied_black_24dp)
+                .setDescription("We don't have any question in this "+Common.selectedCategory.getName()+" category")
+                .onPositive(new MaterialDialog.SingleButtonCallback() {
+                    @Override
+                    public void onClick(@NonNull MaterialDialog dialog, @NonNull DialogAction which) {
+                        dialog.dismiss();
+                        finish();
+                    }
+                }).show();
+    }
+
+    private void loadAnswerSheetPanel() {
         answerSheetAdapter = new AnswerSheetAdapter(this,Common.answerSheetList);
         answer_sheet_view_recycler.setAdapter(answerSheetAdapter);
         answerSheetHelperAdapter = new AnswerSheetHelperAdapter(this,Common.answerSheetList);
         answer_sheet_helper.setAdapter(answerSheetHelperAdapter);
     }
-    
+
     private void viewQuizAnswer() {
         viewPager.setCurrentItem(0);
 
@@ -395,6 +409,7 @@ public class QuestionActivity extends AppCompatActivity
         CurrentQuestion question_state = questionFragment.getSelectedAnswer();
         Common.answerSheetList.set(position,question_state); //set question answer for answerSheet
         answerSheetAdapter.notifyDataSetChanged(); //change color in answer sheet
+        answerSheetHelperAdapter.notifyDataSetChanged();
 
         countCorrectAnswer();
 
