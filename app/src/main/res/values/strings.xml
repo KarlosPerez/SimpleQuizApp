@@ -27,4 +27,17 @@
     <string name="finish_game_confirm">Do you really want to confirm?</string>
     <string name="negative_answer">No</string>
     <string name="positive_answer">Yes</string>
+    <string name="hint_success">SUCCESS</string>
+    <string name="hint_number_questions">30/30</string>
+    <string name="hint_result">RESULT</string>
+    <string name="hint_excellent">EXCELLENT</string>
+    <string name="hint_result_excellent">EXCELLENT</string>
+    <string name="hint_result_good">GOOD</string>
+    <string name="hint_result_poor">POOR</string>
+    <string name="hint_result_bad">BAD</string>
+    <string name="hint_result_failing">FAILING</string>
+    <string name="hint_view_answer">View Answer</string>
+    <string name="hint_do_quiz_again">Do Quiz Again</string>
+    <string name="do_again_prompt">Do quiz again?</string>
+    <string name="delete_data_confirm">Do you really want to delete this data?</string>
 </resources>
